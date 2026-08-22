@@ -1,5 +1,7 @@
 # KiteFlow
 
+From SmarFPay to KiteFlow — a new name, a new identity, and a bigger vision.
+
 A premium stablecoin wallet UI for **Arc Testnet** — Send, Receive, Request, Swap
 (same-chain, no bridging) and an AI Agent for automating transfers, all wrapped
 in a "Midnight Iris" luxury design system.
