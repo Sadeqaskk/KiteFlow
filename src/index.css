@@ -1,0 +1,74 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-iris-border;
+  }
+  html {
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-iris-radial text-pearl font-sans antialiased;
+    background-attachment: fixed;
+  }
+  ::selection {
+    @apply bg-violet-500/40 text-white;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #332E60;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #46407e;
+  }
+  :focus-visible {
+    outline: 2px solid #9C8CFF;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Glass panel — the base surface used across every card in the product */
+  .glass {
+    @apply relative bg-iris-panel/70 backdrop-blur-xl border border-white/6 shadow-panel shadow-inset-line;
+  }
+
+  /* Signature sheen sweep, used sparingly on hero surfaces only */
+  .sheen::after {
+    content: '';
+    @apply pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit];
+    background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.10) 50%, transparent 60%);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-aurora bg-200% animate-aurora-shift px-5 py-3 font-sans font-semibold text-midnight-950 shadow-glow-violet transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/3 px-5 py-3 font-sans font-medium text-pearl transition-colors duration-200 hover:bg-white/7 active:scale-[0.98];
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/4 px-3 py-1 text-xs font-medium tracking-wide text-pearl-dim;
+  }
+
+  .input-luxe {
+    @apply w-full rounded-2xl border border-white/10 bg-midnight-950/50 px-4 py-3.5 font-sans text-pearl placeholder:text-pearl-faint outline-none transition-colors focus:border-violet-400/60;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-3 rounded-2xl px-3.5 py-3 text-sm font-medium text-pearl-dim transition-all duration-200 hover:bg-white/6 hover:text-pearl;
+  }
+  .nav-item.active {
+    @apply bg-white/6 text-pearl shadow-inset-line;
+  }
+}
