@@ -1,4 +1,4 @@
-# SmarFPay
+# KiteFlow
 
 A premium stablecoin wallet UI for **Arc Testnet** — Send, Receive, Request, Swap
 (same-chain, no bridging) and an AI Agent for automating transfers, all wrapped
