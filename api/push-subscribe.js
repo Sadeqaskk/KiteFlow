@@ -1,4 +1,9 @@
-import { kv } from '@vercel/kv'
+import { Redis } from '@upstash/redis'
+
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+})
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
@@ -6,14 +11,14 @@ export default async function handler(req, res) {
     if (!address || !subscription) {
       return res.status(400).json({ error: 'address and subscription are required' })
     }
-    await kv.set(`push:${address.toLowerCase()}`, subscription)
+    await redis.set(`push:${address.toLowerCase()}`, subscription)
     return res.status(200).json({ ok: true })
   }
 
   if (req.method === 'DELETE') {
     const { address } = req.body || {}
     if (!address) return res.status(400).json({ error: 'address is required' })
-    await kv.del(`push:${address.toLowerCase()}`)
+    await redis.del(`push:${address.toLowerCase()}`)
     return res.status(200).json({ ok: true })
   }
 

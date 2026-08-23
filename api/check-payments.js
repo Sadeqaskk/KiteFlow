@@ -1,8 +1,13 @@
-import { kv } from '@vercel/kv'
+import { Redis } from '@upstash/redis'
 import { createPublicClient, http, formatUnits } from 'viem'
 import { arcTestnet } from '../src/lib/arcChain'
 import { kiteFlowSendAbi } from '../src/lib/kiteFlowSendAbi'
 import webpush from 'web-push'
+
+const redis = new Redis({
+  url: process.env.KV_REST_API_URL,
+  token: process.env.KV_REST_API_TOKEN,
+})
 
 const KITEFLOW_SEND_ADDRESS = process.env.VITE_KITEFLOW_SEND_ADDRESS
 const NATIVE = '0x0000000000000000000000000000000000000000'
@@ -28,7 +33,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const lastBlock = (await kv.get('lastProcessedBlock')) || 0
+    const lastBlock = (await redis.get('lastProcessedBlock')) || 0
     const latest = await publicClient.getBlockNumber()
 
     if (BigInt(lastBlock) >= latest) {
@@ -46,7 +51,7 @@ export default async function handler(req, res) {
     let sent = 0
     for (const log of logs) {
       const { to, amount, token } = log.args
-      const subscription = await kv.get(`push:${to.toLowerCase()}`)
+      const subscription = await redis.get(`push:${to.toLowerCase()}`)
       if (!subscription) continue
 
       const decimals = token.toLowerCase() === NATIVE ? 18 : 6
@@ -60,12 +65,12 @@ export default async function handler(req, res) {
         sent++
       } catch (err) {
         if (err.statusCode === 410 || err.statusCode === 404) {
-          await kv.del(`push:${to.toLowerCase()}`)
+          await redis.del(`push:${to.toLowerCase()}`)
         }
       }
     }
 
-    await kv.set('lastProcessedBlock', latest.toString())
+    await redis.set('lastProcessedBlock', latest.toString())
     return res.status(200).json({ ok: true, checked: logs.length, sent })
   } catch (err) {
     return res.status(500).json({ error: err.message })
