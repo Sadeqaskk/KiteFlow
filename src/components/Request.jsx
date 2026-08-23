@@ -1,13 +1,14 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { ChevronDown, Link2, Send as SendIcon, Clock3, Copy, Check } from 'lucide-react'
+import { Link2, Send as SendIcon, Clock3, Copy, Check } from 'lucide-react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { useArcBalances } from '../lib/useArcBalances'
 import { useArcActivity } from '../lib/useArcActivity'
-import { ARC_TOKENS } from '../lib/tokens'
+import { SWAPPABLE_TOKENS } from '../lib/tokens'
 import { getUsernameForAddress } from '../lib/username'
 import { useConnectModal } from '../lib/connectModalContext'
+import TokenSelector from './TokenSelector'
 
-const balancesList = Object.values(ARC_TOKENS)
+const REQUESTABLE_TOKENS = SWAPPABLE_TOKENS.map((t) => ({ ...t, enabled: true }))
 const STORAGE_KEY = 'kiteflow:pendingRequests'
 
 function loadPendingRequests() {
@@ -40,7 +41,7 @@ export default function Request() {
   const { transactions } = useArcActivity(myAddress)
 
   const [myUsername, setMyUsername] = useState(null)
-  const [asset, setAsset] = useState(balancesList[0])
+  const [asset, setAsset] = useState(REQUESTABLE_TOKENS[0])
   const [amount, setAmount] = useState('')
   const [note, setNote] = useState('')
   const [selected, setSelected] = useState(null)
@@ -58,8 +59,6 @@ export default function Request() {
     return () => { cancelled = true }
   }, [myAddress])
 
-  // Real "contacts" = people who've actually sent you funds before,
-  // pulled from on-chain activity instead of a mock address book.
   const contacts = useMemo(() => {
     const seen = new Map()
     for (const tx of transactions) {
@@ -76,8 +75,6 @@ export default function Request() {
     return Array.from(seen.values())
   }, [transactions])
 
-  // Reconcile locally-tracked requests against real on-chain fulfillment:
-  // a request is "fulfilled" once a matching incoming transfer shows up.
   useEffect(() => {
     if (!pending.length || !transactions.length) return
     const stillOpen = pending.filter((req) => {
@@ -217,20 +214,7 @@ export default function Request() {
             placeholder="0.00"
             className="w-full bg-transparent font-display text-2xl text-pearl placeholder:text-pearl-faint outline-none"
           />
-          <div className="relative shrink-0">
-            <select
-              value={asset.symbol}
-              onChange={(e) => setAsset(balancesList.find((b) => b.symbol === e.target.value) || balancesList[0])}
-              className="chip appearance-none bg-transparent pr-5 text-pearl"
-            >
-              {balancesList.map((b) => (
-                <option key={b.symbol} value={b.symbol} className="bg-midnight-950 text-pearl">
-                  {b.symbol}
-                </option>
-              ))}
-            </select>
-            <ChevronDown size={12} className="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2" />
-          </div>
+          <TokenSelector tokens={REQUESTABLE_TOKENS} value={asset} onChange={setAsset} />
         </div>
         {!balancesLoading && (
           <p className="mt-1.5 text-[11px] text-pearl-faint">

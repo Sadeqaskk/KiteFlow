@@ -8,24 +8,28 @@ import { useKiteFlowSend } from '../lib/useKiteFlowSend'
 import { isValidAddress } from '../lib/kiteFlowSend'
 import { resolveUsername } from '../lib/username'
 import { arcTestnet } from '../lib/arcChain'
+import TokenSelector from './TokenSelector'
 
 const SEND_ASSETS = [
-  { key: 'USDC', label: 'USDC', native: true },
-  { key: 'EURC', label: 'EURC', native: false, token: ARC_TOKENS.EURC },
+  { key: 'USDC', symbol: 'USDC', name: 'USD Coin', logo: 'public/usdc.png', native: true, enabled: true },
+  { key: 'EURC', symbol: 'EURC', name: 'Euro Coin', logo: 'public/eurc.png', native: false, token: ARC_TOKENS.EURC, enabled: true },
   // cirBTC: no public Circle-issued contract address on Arc Testnet yet.
-  // Add here the moment one exists — do not guess an address.
+  // Shown as disabled in the selector — add here once a real address exists.
+  { key: 'cirBTC', symbol: 'cirBTC', name: 'Circle Bitcoin', logo: 'public/cirbtc.png', enabled: false },
 ]
 
-export default function Send({ prefillTo }) {
+export default function Send({ prefill }) {
   const { wallet } = useArcWalletClient()
   const address = wallet?.address
 
-  const [assetKey, setAssetKey] = useState('USDC')
+  const [assetKey, setAssetKey] = useState(
+    prefill?.token && SEND_ASSETS.some((a) => a.key === prefill.token && a.enabled) ? prefill.token : 'USDC'
+  )
   const [recipientInput, setRecipientInput] = useState('')
   const [resolvedAddress, setResolvedAddress] = useState(null)
-  const [resolveState, setResolveState] = useState('idle') // idle | checking | found | not_found
-  const [amount, setAmount] = useState('')
-  const [memo, setMemo] = useState('')
+  const [resolveState, setResolveState] = useState('idle')
+  const [amount, setAmount] = useState(prefill?.amount || '')
+  const [memo, setMemo] = useState(prefill?.memo || '')
 
   const { send, status, error, txHash, reset } = useKiteFlowSend()
   const { balance: nativeBalance } = useArcBalance(address)
@@ -68,9 +72,9 @@ export default function Send({ prefillTo }) {
   }
 
   useEffect(() => {
-    if (prefillTo) handleRecipientChange(prefillTo)
+    if (prefill?.to) handleRecipientChange(prefill.to)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [prefillTo])
+  }, [prefill?.to])
 
   const canSend = Boolean(address) && resolveState === 'found' && amount && Number(amount) > 0 && status !== 'sending' && status !== 'approving'
 
@@ -82,7 +86,7 @@ export default function Send({ prefillTo }) {
         </div>
         <h2 className="mt-6 font-display text-2xl text-pearl">Transfer sent</h2>
         <p className="mt-2 text-sm text-pearl-faint">
-          {amount} {asset.label} is on its way to {recipientInput.startsWith('0x') ? `${resolvedAddress.slice(0, 6)}...${resolvedAddress.slice(-4)}` : recipientInput} on Arc Testnet.
+          {amount} {asset.symbol} is on its way to {recipientInput.startsWith('0x') ? `${resolvedAddress.slice(0, 6)}...${resolvedAddress.slice(-4)}` : recipientInput} on Arc Testnet.
         </p>
         <div className="glass mt-6 rounded-2xl p-4 text-left text-xs text-pearl-faint">
           <div className="flex justify-between py-1.5"><span>Network</span><span className="text-pearl">Arc Testnet</span></div>
@@ -164,18 +168,10 @@ export default function Send({ prefillTo }) {
             placeholder="0.00"
             className="w-full bg-transparent font-display text-2xl text-pearl placeholder:text-pearl-faint outline-none"
           />
-          <select
-            value={assetKey}
-            onChange={(e) => setAssetKey(e.target.value)}
-            className="chip shrink-0 cursor-pointer bg-transparent"
-          >
-            {SEND_ASSETS.map((a) => (
-              <option key={a.key} value={a.key} className="bg-midnight-950 text-pearl">{a.label}</option>
-            ))}
-          </select>
+          <TokenSelector tokens={SEND_ASSETS} value={asset} onChange={(t) => setAssetKey(t.key)} />
         </div>
         <p className="mt-2 text-xs text-pearl-faint">
-          Available: {address ? balanceNum.toLocaleString(undefined, { maximumFractionDigits: 4 }) : '—'} {asset.label}
+          Available: {address ? balanceNum.toLocaleString(undefined, { maximumFractionDigits: 4 }) : '—'} {asset.symbol}
         </p>
 
         <div className="mt-4 flex gap-2">

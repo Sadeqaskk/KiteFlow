@@ -3,11 +3,9 @@ import { QRCodeSVG } from 'qrcode.react'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { Copy, Check, Share2, Wallet, AtSign, ArrowRight } from 'lucide-react'
 import { useArcBalances } from '../lib/useArcBalances'
-import { ARC_TOKENS } from '../lib/tokens'
+import { ALL_DISPLAY_TOKENS } from '../lib/tokens'
 import { getUsernameForAddress } from '../lib/username'
 import { useConnectModal } from '../lib/connectModalContext'
-
-const balancesList = Object.values(ARC_TOKENS)
 
 export default function Receive({ onNavigate }) {
   const { ready, authenticated, user } = usePrivy()
@@ -15,7 +13,7 @@ export default function Receive({ onNavigate }) {
   const { open: openConnectModal } = useConnectModal()
   const [copied, setCopied] = useState(false)
   const [usernameCopied, setUsernameCopied] = useState(false)
-  const [asset, setAsset] = useState(balancesList[0])
+  const [asset, setAsset] = useState(ALL_DISPLAY_TOKENS.find((t) => t.enabled))
   const [username, setUsername] = useState(null)
   const [usernameLoading, setUsernameLoading] = useState(false)
 
@@ -81,7 +79,7 @@ export default function Receive({ onNavigate }) {
             {authenticated ? (user?.email?.address || 'Connected wallet') : 'Not connected'}
           </p>
           <p className="text-sm text-pearl-faint">
-            {authenticated ? (isEmbedded ? 'SmarFPay embedded wallet' : 'External wallet') : 'Connect to receive funds'}
+            {authenticated ? (isEmbedded ? 'KiteFlowSend embedded wallet' : 'External wallet') : 'Connect to receive funds'}
           </p>
 
           {authenticated && liveAddress && !usernameLoading && (
@@ -131,28 +129,38 @@ export default function Receive({ onNavigate }) {
         <div className="glass rounded-3xl p-6">
           <p className="text-xs font-medium tracking-[0.14em] text-pearl-faint uppercase">Receive in</p>
           <div className="mt-3 flex flex-col gap-2">
-            {balancesList.map((b) => (
-              <button
-                key={b.symbol}
-                onClick={() => setAsset(b)}
-                className={`flex items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-colors ${
-                  asset.symbol === b.symbol ? 'border-violet-400/40 bg-violet-500/[0.08]' : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05]'
-                }`}
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500/25 to-teal-400/25 font-display text-sm text-pearl">
-                  {b.icon}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-pearl">{b.symbol}</p>
-                  <p className="text-[11px] text-pearl-faint">{b.name}</p>
-                </div>
-                {authenticated && !balancesLoading && (
-                  <p className="text-xs text-pearl-faint">
-                    {(liveBalances.find((lb) => lb.symbol === b.symbol)?.amount ?? 0).toFixed(4)}
-                  </p>
-                )}
-              </button>
-            ))}
+            {ALL_DISPLAY_TOKENS.map((b) => {
+              const isDisabled = b.enabled === false
+              return (
+                <button
+                  key={b.symbol}
+                  onClick={() => !isDisabled && setAsset(b)}
+                  disabled={isDisabled}
+                  className={`flex items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-colors ${
+                    isDisabled
+                      ? 'cursor-not-allowed border-white/[0.06] bg-white/[0.02] opacity-40'
+                      : asset.symbol === b.symbol
+                        ? 'border-violet-400/40 bg-violet-500/[0.08]'
+                        : 'border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05]'
+                  }`}
+                >
+                  <img src={b.logo} alt={b.symbol} className="h-9 w-9 rounded-full" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-pearl">{b.symbol}</p>
+                    <p className="text-[11px] text-pearl-faint">{b.name}</p>
+                  </div>
+                  {isDisabled ? (
+                    <span className="chip !border-white/10 !bg-white/[0.05] !px-2 !py-0.5 !text-[10px] !text-pearl-faint">Soon</span>
+                  ) : (
+                    authenticated && !balancesLoading && (
+                      <p className="text-xs text-pearl-faint">
+                        {(liveBalances.find((lb) => lb.symbol === b.symbol)?.amount ?? 0).toFixed(4)}
+                      </p>
+                    )
+                  )}
+                </button>
+              )
+            })}
           </div>
         </div>
 

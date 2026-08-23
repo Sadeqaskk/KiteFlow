@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { parseUnits, formatUnits } from 'viem'
 import { usePrivy, useWallets } from '@privy-io/react-auth'
 import { ArrowDownUp, Info, AlertTriangle, ExternalLink, Loader2 } from 'lucide-react'
-import { SWAPPABLE_TOKENS } from '../lib/tokens'
+import { SWAPPABLE_TOKENS, ALL_DISPLAY_TOKENS } from '../lib/tokens'
 import { ARROW_ROUTER_ADDRESS, isValidAddress } from '../lib/arrowRouter'
 import { arrowRouterAbi } from '../lib/arrowRouterAbi'
 import { erc20Abi } from '../lib/erc20Abi'
@@ -10,8 +10,9 @@ import { publicClient } from '../lib/publicClient'
 import { arcTestnet } from '../lib/arcChain'
 import { useArcWalletClient } from '../lib/useArcWalletClient'
 import { useTokenBalance } from '../lib/useTokenBalance'
+import TokenSelector from './TokenSelector'
 
-const SLIPPAGE_BPS = 50n // 0.50% default slippage tolerance
+const SLIPPAGE_BPS = 50n
 
 export default function Swap() {
   const { authenticated, login } = usePrivy()
@@ -235,20 +236,7 @@ export default function Swap() {
               placeholder="0.00"
               className="w-full bg-transparent font-display text-3xl text-pearl placeholder:text-pearl-faint outline-none"
             />
-            <div className="flex gap-1.5">
-              {SWAPPABLE_TOKENS.map((t) => (
-                <button
-                  key={t.symbol}
-                  onClick={() => setFrom(t)}
-                  disabled={t.symbol === to.symbol}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-30 ${
-                    from.symbol === t.symbol ? 'bg-aurora text-midnight-950' : 'bg-white/[0.05] text-pearl-dim hover:bg-white/[0.1]'
-                  }`}
-                >
-                  {t.symbol}
-                </button>
-              ))}
-            </div>
+            <TokenSelector tokens={ALL_DISPLAY_TOKENS} value={from} exclude={to.symbol} onChange={setFrom} />
           </div>
           <p className="mt-2 text-xs text-pearl-faint">
             {authenticated ? (
@@ -281,19 +269,7 @@ export default function Swap() {
                 />
               )}
             </div>
-            <div className="flex gap-1.5">
-              {SWAPPABLE_TOKENS.filter((t) => t.symbol !== from.symbol).map((t) => (
-                <button
-                  key={t.symbol}
-                  onClick={() => setTo(t)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                    to.symbol === t.symbol ? 'bg-aurora text-midnight-950' : 'bg-white/[0.05] text-pearl-dim hover:bg-white/[0.1]'
-                  }`}
-                >
-                  {t.symbol}
-                </button>
-              ))}
-            </div>
+            <TokenSelector tokens={ALL_DISPLAY_TOKENS} value={to} exclude={from.symbol} onChange={setTo} />
           </div>
           <p className="mt-2 text-xs text-pearl-faint">
             {authenticated ? (

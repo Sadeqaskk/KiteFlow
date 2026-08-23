@@ -38,7 +38,7 @@ export default function AIAgent() {
     setLoading(true)
 
     try {
-      const reply = await getAgentReply(next)
+      const reply = 'Thanks you for your interest, AI agent is Coming soon'
       setMessages((m) => [...m, { role: 'agent', text: reply }])
     } catch (err) {
       setError(err.message || 'The agent is unavailable right now.')

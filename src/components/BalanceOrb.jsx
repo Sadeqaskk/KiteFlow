@@ -2,6 +2,12 @@ import React from 'react'
 import { Eye, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 import { useArcBalances } from '../lib/useArcBalances'
 
+const TOKEN_LOGOS = {
+  USDC: 'public/usdc.png',
+  EURC: 'public/eurc.png',
+  cirBTC: 'public/cirbtc.png',
+}
+
 export default function BalanceOrb({ onSend, onReceive, liveAddress, liveBalance }) {
   const isLive = Boolean(liveAddress)
   const { balances: liveBalances } = useArcBalances(isLive ? liveAddress : null)
@@ -61,9 +67,13 @@ export default function BalanceOrb({ onSend, onReceive, liveAddress, liveBalance
                 key={b.symbol}
                 className="flex min-w-[140px] flex-1 items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5"
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500/25 to-teal-400/25 font-display text-sm text-pearl">
-                  {b.icon}
-                </div>
+                {TOKEN_LOGOS[b.symbol] ? (
+                  <img src={TOKEN_LOGOS[b.symbol]} alt={b.symbol} className="h-9 w-9 rounded-full" />
+                ) : (
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500/25 to-teal-400/25 font-display text-sm text-pearl">
+                    {b.icon}
+                  </div>
+                )}
                 <div>
                   <p className="text-sm font-medium text-pearl">
                     {b.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -72,6 +82,18 @@ export default function BalanceOrb({ onSend, onReceive, liveAddress, liveBalance
                 </div>
               </div>
             ))}
+
+          {isLive && (
+            <div className="flex min-w-[140px] flex-1 items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5 opacity-40">
+              <img src={TOKEN_LOGOS.cirBTC} alt="cirBTC" className="h-9 w-9 rounded-full" />
+              <div>
+                <p className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] tracking-wide text-pearl-faint uppercase w-fit">
+                  Soon
+                </p>
+                <p className="mt-1 text-[11px] text-pearl-faint">cirBTC</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3">
