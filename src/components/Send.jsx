@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Wallet, ShieldCheck, ArrowRight, ExternalLink, AlertCircle, Loader2 } from 'lucide-react'
-import { ARC_TOKENS } from '../lib/tokens'
+import { ARC_TOKENS, ALL_DISPLAY_TOKENS } from '../lib/tokens'
 import { useArcWalletClient } from '../lib/useArcWalletClient'
 import { useArcBalance } from '../lib/useArcBalance'
 import { useTokenBalance } from '../lib/useTokenBalance'
@@ -10,12 +10,14 @@ import { resolveUsername } from '../lib/username'
 import { arcTestnet } from '../lib/arcChain'
 import TokenSelector from './TokenSelector'
 
+const logoFor = (symbol) => ALL_DISPLAY_TOKENS.find((t) => t.symbol === symbol)?.logo
+
 const SEND_ASSETS = [
-  { key: 'USDC', symbol: 'USDC', name: 'USD Coin', logo: 'public/usdc.png', native: true, enabled: true },
-  { key: 'EURC', symbol: 'EURC', name: 'Euro Coin', logo: 'public/eurc.png', native: false, token: ARC_TOKENS.EURC, enabled: true },
+  { key: 'USDC', symbol: 'USDC', name: 'USD Coin', logo: logoFor('USDC'), native: true, enabled: true },
+  { key: 'EURC', symbol: 'EURC', name: 'Euro Coin', logo: logoFor('EURC'), native: false, token: ARC_TOKENS.EURC, enabled: true },
   // cirBTC: no public Circle-issued contract address on Arc Testnet yet.
   // Shown as disabled in the selector — add here once a real address exists.
-  { key: 'cirBTC', symbol: 'cirBTC', name: 'Circle Bitcoin', logo: 'public/cirbtc.png', enabled: false },
+  { key: 'cirBTC', symbol: 'cirBTC', name: 'Circle Bitcoin', logo: logoFor('cirBTC'), enabled: false },
 ]
 
 export default function Send({ prefill }) {

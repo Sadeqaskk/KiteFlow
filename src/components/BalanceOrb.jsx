@@ -1,12 +1,7 @@
 import React from 'react'
 import { Eye, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 import { useArcBalances } from '../lib/useArcBalances'
-
-const TOKEN_LOGOS = {
-  USDC: 'public/usdc.png',
-  EURC: 'public/eurc.png',
-  cirBTC: 'public/cirbtc.png',
-}
+import { ALL_DISPLAY_TOKENS } from '../lib/tokens'
 
 export default function BalanceOrb({ onSend, onReceive, liveAddress, liveBalance }) {
   const isLive = Boolean(liveAddress)
@@ -62,30 +57,37 @@ export default function BalanceOrb({ onSend, onReceive, liveAddress, liveBalance
 
         <div className="flex flex-wrap gap-3">
           {isLive &&
-            liveBalances.map((b) => (
-              <div
-                key={b.symbol}
-                className="flex min-w-[140px] flex-1 items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5"
-              >
-                {TOKEN_LOGOS[b.symbol] ? (
-                  <img src={TOKEN_LOGOS[b.symbol]} alt={b.symbol} className="h-9 w-9 rounded-full" />
-                ) : (
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500/25 to-teal-400/25 font-display text-sm text-pearl">
-                    {b.icon}
+            liveBalances.map((b) => {
+              const tokenMeta = ALL_DISPLAY_TOKENS.find((t) => t.symbol === b.symbol)
+              return (
+                <div
+                  key={b.symbol}
+                  className="flex min-w-[140px] flex-1 items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5"
+                >
+                  {tokenMeta?.logo ? (
+                    <img src={tokenMeta.logo} alt={b.symbol} className="h-9 w-9 rounded-full" />
+                  ) : (
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-violet-500/25 to-teal-400/25 font-display text-sm text-pearl">
+                      {b.icon}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-pearl">
+                      {b.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-[11px] text-pearl-faint">{b.symbol}</p>
                   </div>
-                )}
-                <div>
-                  <p className="text-sm font-medium text-pearl">
-                    {b.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-[11px] text-pearl-faint">{b.symbol}</p>
                 </div>
-              </div>
-            ))}
+              )
+            })}
 
           {isLive && (
             <div className="flex min-w-[140px] flex-1 items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.03] px-4 py-3.5 opacity-40">
-              <img src={TOKEN_LOGOS.cirBTC} alt="cirBTC" className="h-9 w-9 rounded-full" />
+              <img
+                src={ALL_DISPLAY_TOKENS.find((t) => t.symbol === 'cirBTC')?.logo}
+                alt="cirBTC"
+                className="h-9 w-9 rounded-full"
+              />
               <div>
                 <p className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] tracking-wide text-pearl-faint uppercase w-fit">
                   Soon
