@@ -25,7 +25,7 @@ export default function Sidebar({ active, onChange }) {
         <div className="flex items-center gap-2.5 px-2">
           <img
             src="/KiteFlow.png"
-            alt="KiteFlow"
+            alt="KiteFlowSend"
             className="h-9 w-9 rounded-xl object-cover shadow-glow-violet"
           />
           <div>

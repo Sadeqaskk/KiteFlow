@@ -3,14 +3,14 @@ import { Eye, ArrowUpRight, ArrowDownLeft } from 'lucide-react'
 import { useArcBalances } from '../lib/useArcBalances'
 import { ALL_DISPLAY_TOKENS } from '../lib/tokens'
 
-export default function BalanceOrb({ onSend, onReceive, liveAddress, liveBalance }) {
+export default function BalanceOrb({ onSend, onReceive, liveAddress }) {
   const isLive = Boolean(liveAddress)
   const { balances: liveBalances } = useArcBalances(isLive ? liveAddress : null)
 
-  const total =
-    isLive && liveBalance != null
-      ? parseFloat(liveBalance) + liveBalances.filter((b) => b.symbol !== 'USDC').reduce((s, b) => s + b.amount, 0)
-      : 0
+  // Single source of truth: sum every fetched token balance (USDC included).
+  // No more mixing a separately-fetched USDC value with a filtered list —
+  // that split was what caused the mismatched/placeholder-looking numbers.
+  const total = isLive ? liveBalances.reduce((s, b) => s + b.amount, 0) : 0
 
   return (
     <div className="glass sheen relative overflow-hidden rounded-4xl p-8 lg:p-10">

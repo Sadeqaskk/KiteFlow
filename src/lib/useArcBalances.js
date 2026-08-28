@@ -22,10 +22,10 @@ export function useArcBalances(address) {
         const results = await Promise.all(
           Object.values(ARC_TOKENS).map(async (token) => {
             try {
-              if (token.symbol === 'USDC') {
-                const raw = await publicClient.getBalance({ address })
-                return { symbol: token.symbol, icon: token.icon, amount: parseFloat(formatUnits(raw, 18)) }
-              }
+              // All Arc tokens (including USDC) are ERC-20 contracts at a
+              // real address — read balanceOf for every one of them, no
+              // special-casing. Using publicClient.getBalance() here would
+              // read the native gas balance instead, which is wrong.
               const raw = await publicClient.readContract({
                 address: token.address,
                 abi: erc20Abi,
