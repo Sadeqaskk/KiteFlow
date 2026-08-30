@@ -83,6 +83,12 @@ export function useArcActivity(address, { nativeBlockWindow = 200, tokenBlockWin
 
     let cancelled = false
 
+    // Clear immediately on address change — without this, the previous
+    // wallet's transactions stay rendered on screen for the entire
+    // duration of the new wallet's fetch (which can be several seconds),
+    // which looks exactly like "showing the wrong wallet's activity".
+    setTransactions([])
+
     const fetchActivity = async () => {
       setLoading(true)
       try {
@@ -102,6 +108,8 @@ export function useArcActivity(address, { nativeBlockWindow = 200, tokenBlockWin
 
         const all = [...nativeTxs, ...tokenTxsArrays.flat()].sort((a, b) => Number(b.blockNumber - a.blockNumber))
 
+        // Guard against this being a stale fetch for an address the user
+        // has already switched away from again.
         if (!cancelled) setTransactions(all)
       } finally {
         if (!cancelled) setLoading(false)

@@ -49,6 +49,11 @@ export default function Request() {
   const [copied, setCopied] = useState(false)
   const [pending, setPending] = useState(loadPendingRequests)
 
+  // The link is now surfaced in the UI instead of only living inside
+  // navigator.share()/clipboard calls that can silently fail or be dismissed.
+  const [generatedLink, setGeneratedLink] = useState('')
+  const [linkCopied, setLinkCopied] = useState(false)
+
   useEffect(() => {
     if (!myAddress) {
       setMyUsername(null)
@@ -127,15 +132,29 @@ export default function Request() {
     const link = buildLink()
     const shareText = `Requesting ${amount} ${asset.symbol} on KiteFlow${note ? ` — ${note}` : ''}: ${link}`
 
+    // Always surface the link in the UI first — sharing/copying is a bonus
+    // convenience on top, not the only way the user can get it.
+    setGeneratedLink(link)
+    setLinkCopied(false)
+
     if (navigator.share) {
       try {
         await navigator.share({ title: 'KiteFlow payment request', text: shareText, url: link })
       } catch {
-        return
+        // User dismissed the native share sheet — link stays visible below
+        // so they can still copy it manually.
       }
     } else {
-      await navigator.clipboard?.writeText(shareText)
+      try {
+        await navigator.clipboard?.writeText(shareText)
+        setLinkCopied(true)
+        setTimeout(() => setLinkCopied(false), 1800)
+      } catch {
+        // Clipboard blocked (permissions/insecure context) — link is still
+        // shown in the UI so the user isn't stuck with nothing.
+      }
     }
+
     recordRequest()
     setAmount('')
     setNote('')
@@ -143,9 +162,28 @@ export default function Request() {
 
   const handleCopyLink = async () => {
     if (!canRequest) return
-    await navigator.clipboard?.writeText(buildLink())
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1800)
+    const link = buildLink()
+    setGeneratedLink(link)
+    try {
+      await navigator.clipboard?.writeText(link)
+      setCopied(true)
+      setLinkCopied(true)
+      setTimeout(() => {
+        setCopied(false)
+        setLinkCopied(false)
+      }, 1800)
+    } catch {
+      // Clipboard blocked — link box below still lets them select/copy manually.
+    }
+  }
+
+  const handleCopyGeneratedLink = async () => {
+    if (!generatedLink) return
+    try {
+      await navigator.clipboard?.writeText(generatedLink)
+    } catch {}
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 1800)
   }
 
   return (
@@ -230,6 +268,31 @@ export default function Request() {
             {copied ? <Check size={16} className="text-teal-300" /> : <Link2 size={16} />} Create payment link
           </button>
         </div>
+
+        {/* --- Visible payment link (this was missing entirely before) --- */}
+        {generatedLink && (
+          <div className="mt-4 rounded-2xl border border-violet-400/25 bg-violet-500/[0.06] p-3.5">
+            <p className="text-[11px] font-medium tracking-[0.1em] text-violet-300 uppercase">Payment link</p>
+            <div className="mt-2 flex items-center gap-2">
+              <input
+                readOnly
+                value={generatedLink}
+                onFocus={(e) => e.target.select()}
+                className="w-full flex-1 truncate rounded-xl border border-white/10 bg-midnight-950/60 px-3 py-2 font-mono text-[11px] text-pearl-dim outline-none"
+              />
+              <button
+                onClick={handleCopyGeneratedLink}
+                className="shrink-0 rounded-xl border border-white/10 bg-white/[0.05] p-2 text-pearl-faint hover:bg-white/[0.1] hover:text-pearl"
+                title="Copy link"
+              >
+                {linkCopied ? <Check size={14} className="text-teal-300" /> : <Copy size={14} />}
+              </button>
+            </div>
+            <p className="mt-2 text-[11px] text-pearl-faint">
+              {linkCopied ? 'Copied — send this to the person you\'re requesting from.' : 'Share this link with whoever should pay you.'}
+            </p>
+          </div>
+        )}
 
         <div className="mt-7">
           <p className="flex items-center gap-1.5 text-xs font-medium tracking-[0.14em] text-pearl-faint uppercase">

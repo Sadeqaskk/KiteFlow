@@ -7,6 +7,7 @@ import {
   Repeat,
   Sparkles,
   Settings,
+  Github,
 } from 'lucide-react'
 
 const items = [
@@ -17,6 +18,16 @@ const items = [
   { key: 'swap', label: 'Swap', icon: Repeat },
   { key: 'agent', label: 'AI Agent', icon: Sparkles },
 ]
+
+// Simple inline X (Twitter) glyph — lucide's Twitter icon is the old bird logo,
+// not the current X mark, so this is a small custom SVG instead.
+function XIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M18.9 2H22l-7.6 8.7L23.3 22H16.6l-5.2-6.8L5.4 22H2.3l8.1-9.3L1.4 2h6.9l4.7 6.2L18.9 2Zm-1.2 18h1.7L7.4 3.9H5.6L17.7 20Z" />
+    </svg>
+  )
+}
 
 export default function Sidebar({ active, onChange }) {
   return (
@@ -62,11 +73,34 @@ export default function Sidebar({ active, onChange }) {
             <span className="ml-auto h-1.5 w-1.5 rounded-full bg-teal-400 shadow-glow-teal" />
           )}
         </button>
+
         <div className="glass rounded-2xl p-4">
           <p className="chip !bg-teal-400/10 !text-teal-300 !border-teal-400/20">Testnet</p>
           <p className="mt-2 text-xs leading-relaxed text-pearl-faint">
             You're transacting on Arc Testnet. Assets carry no real-world value.
           </p>
+        </div>
+
+        {/* Builder / project links */}
+        <div className="flex items-center gap-3 px-1">
+          <a
+            href="https://x.com/0xsadik0"
+            target="_blank"
+            rel="noreferrer"
+            title="@0xsadik0 on X"
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-pearl-faint transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-pearl"
+          >
+            <XIcon className="h-3.5 w-3.5" />
+          </a>
+          <a
+            href="https://github.com/Sadeqaskk/KiteFlow"
+            target="_blank"
+            rel="noreferrer"
+            title="KiteFlowSend on GitHub"
+            className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-pearl-faint transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-pearl"
+          >
+            <Github className="h-3.5 w-3.5" />
+          </a>
         </div>
       </div>
     </aside>
